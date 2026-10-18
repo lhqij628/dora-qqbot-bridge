@@ -150,6 +150,8 @@ class ImageEditTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_windows_network_error_and_disconnect_do_not_retry_generation(self):
         windows_error = OSError(0, 'semaphore timeout', None, 121)
+        # Linux ignores the Windows-specific OSError constructor argument.
+        windows_error.winerror = 121
         for error in (windows_error, bridge.ClientConnectionError('connection reset')):
             with self.subTest(error=type(error).__name__):
                 with patch.object(self.bot.session, 'post') as post:
