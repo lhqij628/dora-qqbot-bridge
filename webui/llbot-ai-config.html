@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLBot AI配置</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eef2f7;
+        --panel: #ffffff;
+        --panel-soft: #f7f9fc;
+        --ink: #182230;
+        --muted: #667085;
+        --line: #d8dee8;
+        --line-strong: #c4ccd9;
+        --primary: #176b87;
+        --primary-strong: #12566d;
+        --ok: #13795b;
+        --warn: #a15c07;
+        --bad: #b42318;
+        --shadow: 0 18px 50px rgba(18, 32, 50, 0.12);
+        font-family: "Microsoft YaHei", Inter, system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+      }
+
+      .header {
+        background: #142033;
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .header-inner {
+        width: min(1280px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 22px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 26px;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      .sub {
+        margin: 7px 0 0;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 14px;
+      }
+
+      .main {
+        width: min(1280px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 20px 0 28px;
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 8px 24px rgba(18, 32, 50, 0.08);
+        backdrop-filter: blur(10px);
+      }
+
+      .statusline {
+        min-width: 0;
+        color: var(--muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+
+      .actions,
+      .panel-actions,
+      .buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        min-height: 40px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        padding: 8px 13px;
+        background: #fff;
+        color: var(--ink);
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        border-color: #98a6ba;
+        background: #f7f9fc;
+      }
+
+      .btn.primary {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .btn.primary:hover {
+        background: var(--primary-strong);
+      }
+
+      .btn.ghost {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.24);
+      }
+
+      .btn.small {
+        min-height: 34px;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+
+      .quick-status {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--panel);
+      }
+
+      .metric b {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 13px;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .metric.ok b {
+        color: var(--ok);
+      }
+
+      .metric.bad b {
+        color: var(--bad);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .nav {
+        position: sticky;
+        top: 82px;
+        align-self: start;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 8px;
+      }
+
+      .nav a {
+        display: block;
+        border-radius: 6px;
+        padding: 9px 10px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .nav a:hover {
+        background: var(--panel-soft);
+        color: var(--ink);
+      }
+
+      .content {
+        display: grid;
+        gap: 14px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 1px 2px rgba(18, 32, 50, 0.04);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel-soft);
+      }
+
+      .panel-head h2 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.3;
+      }
+
+      .panel-head p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        padding: 14px 16px 16px;
+      }
+
+      .field {
+        min-width: 0;
+      }
+
+      .field.wide {
+        grid-column: 1 / -1;
+      }
+
+      .field-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 6px;
+        color: #344054;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .field-hint {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      input[type="text"],
+      input[type="url"],
+      input[type="password"],
+      input[type="number"],
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        outline: none;
+        padding: 10px 11px;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.14);
+      }
+
+      textarea {
+        min-height: 118px;
+        resize: vertical;
+        line-height: 1.55;
+      }
+
+      .switch {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 42px;
+        padding: 9px 11px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .switch input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+      }
+
+      .test-result {
+        grid-column: 1 / -1;
+        display: none;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+      }
+
+      .test-result.show {
+        display: block;
+      }
+
+      .test-result.pending {
+        background: #fff7e6;
+        color: var(--warn);
+        border: 1px solid #f3ce8d;
+      }
+
+      .test-result.ok {
+        background: #eaf7f1;
+        color: var(--ok);
+        border: 1px solid #a8dcc8;
+      }
+
+      .test-result.bad {
+        background: #fff0ee;
+        color: var(--bad);
+        border: 1px solid #f5b5ae;
+      }
+
+      .voice-picker {
+        grid-column: 1 / -1;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-soft);
+        padding: 12px;
+      }
+
+      .voice-top {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) auto;
+        gap: 10px;
+        align-items: end;
+      }
+
+      .voice-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .voice-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 11px;
+      }
+
+      .voice-card strong,
+      .voice-card code {
+        display: block;
+      }
+
+      .voice-card strong {
+        margin-bottom: 6px;
+      }
+
+      .voice-card code {
+        margin-bottom: 8px;
+        padding: 7px;
+        border-radius: 6px;
+        background: #eef2f7;
+        color: #344054;
+        font-size: 12px;
+        word-break: break-all;
+      }
+
+      .voice-card audio {
+        width: 100%;
+        height: 34px;
+        margin-bottom: 8px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .selfie-reference {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      #selfie {
+        scroll-margin-top: 90px;
+      }
+
+      #selfieUpload {
+        max-width: 100%;
+      }
+
+      .selfie-preview {
+        width: 160px;
+        height: 200px;
+        object-fit: contain;
+        background: var(--panel-soft);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+
+      .selfie-reference .field {
+        flex: 1 1 240px;
+        min-width: 0;
+      }
+
+      @media (max-width: 920px) {
+        .layout,
+        .toolbar,
+        .voice-top {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          position: static;
+          display: flex;
+          overflow-x: auto;
+          gap: 4px;
+        }
+
+        .nav a {
+          white-space: nowrap;
+        }
+
+        .quick-status {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        #selfie {
+          scroll-margin-top: 170px;
+        }
+
+        .header-inner,
+        .main {
+          width: min(100% - 24px, 1280px);
+        }
+
+        .header-inner,
+        .panel-head,
+        .actions {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .quick-status,
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="header">
+        <div class="header-inner">
+          <div>
+            <h1>LLBot AI配置</h1>
+            <p class="sub">聊天、图片生成、主动回复、记忆和群 AI 语音的运行配置。</p>
+          </div>
+          <a class="btn ghost" href="/#dashboard">返回 WebUI</a>
+        </div>
+      </header>
+
+      <main class="main">
+        <div class="toolbar">
+          <div id="status" class="statusline">正在读取配置...</div>
+          <div class="actions">
+            <button type="button" class="btn" id="reload">重新读取</button>
+            <button type="submit" form="form" class="btn primary">保存配置</button>
+          </div>
+        </div>
+
+        <div class="quick-status" id="quickStatus"></div>
+
+        <form id="form" hidden>
+          <div class="layout">
+            <nav class="nav" id="sectionNav"></nav>
+            <div class="content" id="sections"></div>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <script>
+      const BRIDGE = "http://127.0.0.1:8001";
+      const sections = [
+        {
+          id: "base",
+          title: "基础连接",
+          desc: "AIBridge 与 OneBot WebSocket 的基础通道。",
+          test: { target: "onebot", label: "测试 OneBot" },
+          fields: [
+            ["enabled", "总开关", "checkbox"],
+            ["onebot.ws_url", "OneBot WebSocket 地址", "text"],
+            ["onebot.access_token", "OneBot Token", "password"],
+          ],
+        },
+        {
+          id: "chat",
+          title: "聊天回复",
+          desc: "文本模型、触发词和群聊回复行为。",
+          test: { target: "chat", label: "测试聊天 API" },
+          fields: [
+            ["chat.enabled", "聊天开关", "checkbox"],
+            ["chat.base_url", "聊天 API Base URL", "text"],
+            ["chat.api_key", "聊天 API Key", "password"],
+            ["chat.model", "聊天模型", "text"],
+            ["chat.trigger", "聊天触发词", "text"],
+            ["chat.reply_to_all", "无触发词也自动回复", "checkbox"],
+            ["chat.system_prompt", "聊天提示词", "textarea", "wide"],
+          ],
+        },
+        {
+          id: "image",
+          title: "图片生成",
+          desc: "生图模型、触发词、尺寸和安全改写。",
+          test: { target: "image", label: "测试生图 API" },
+          fields: [
+            ["image.enabled", "生图开关", "checkbox"],
+            ["image.base_url", "生图 API Base URL", "text"],
+            ["image.api_key", "生图 API Key", "password"],
+            ["image.model", "生图模型", "text"],
+            ["image.trigger", "生图触发词", "text"],
+            ["image.size", "图片尺寸", "text"],
+          ],
+        },
+        {
+          id: "image_edit",
+          title: "图生图",
+          desc: "",
+          fields: [
+            ["image_edit.enabled", "图生图开关", "checkbox"],
+            ["image_edit.base_url", "图生图 API Base URL", "text"],
+            ["image_edit.api_key", "图生图 API Key", "password"],
+            ["image_edit.model", "图生图模型", "text"],
+            ["image_edit.size", "图片尺寸", "text"],
+            ["image_edit.timeout_seconds", "请求超时（秒）", "number"],
+            ["image_edit.safety_rewrite", "安全提示词改写", "checkbox"],
+          ],
+        },
+        {
+          id: "selfie",
+          title: "固定形象",
+          desc: "",
+          fields: [
+            ["selfie.enabled", "固定形象自拍", "checkbox"],
+            ["selfie.reference_url", "公网参考图 URL", "url", "wide"],
+            ["selfie.identity_prompt", "外貌与画风设定", "textarea", "wide"],
+          ],
+          extra: "selfie",
+        },
+        {
+          id: "voice",
+          title: "群 AI 语音",
+          desc: "语音触发、音色和音色试听选择。",
+          fields: [
+            ["voice.enabled", "群 AI 语音开关", "checkbox"],
+            ["voice.trigger", "群 AI 语音触发词", "text"],
+            ["voice.character", "群 AI 语音音色ID/名称", "text"],
+            ["voice.chat_type", "群 AI 语音 Chat Type", "number"],
+          ],
+          extra: "voice",
+        },
+        {
+          id: "proactive",
+          title: "主动回复",
+          desc: "群聊主动插话与语义接话策略。",
+          fields: [
+            ["proactive.enabled", "群聊主动聊天", "checkbox"],
+            ["proactive.probability", "主动聊天概率 0-1", "number"],
+            ["proactive.cooldown_seconds", "主动聊天冷却秒数", "number"],
+            ["proactive.min_recent_messages", "触发前最少群消息数", "number"],
+            ["proactive.active_window_seconds", "群聊活跃窗口秒数", "number"],
+            ["proactive.min_seconds_after_bot_reply", "机器人发言后沉默秒数", "number"],
+            ["contextual_reply.enabled", "语义接话开关", "checkbox"],
+            ["contextual_reply.cooldown_seconds", "语义接话冷却秒数", "number"],
+            ["contextual_reply.ambiguous_probability", "模糊接话概率 0-1", "number"],
+            ["contextual_reply.followup_window_seconds", "追问延续窗口秒数", "number"],
+            ["contextual_reply.active_window_seconds", "群聊上下文窗口秒数", "number"],
+            ["contextual_reply.min_recent_messages", "判断前最少群消息数", "number"],
+            ["proactive.prompt", "主动聊天提示词", "textarea", "wide"],
+          ],
+        },
+        {
+          id: "memory",
+          title: "记忆",
+          desc: "短期上下文、中期摘要和长期事实记忆。",
+          fields: [
+            ["memory.enabled", "记忆总开关", "checkbox"],
+            ["memory.summary_enabled", "中期自动摘要", "checkbox"],
+            ["memory.long_term_enabled", "长期事实/人物画像", "checkbox"],
+            ["memory.summary_every_messages", "每多少条更新摘要", "number"],
+            ["memory.summary_recent_limit", "摘要读取最近消息数", "number"],
+            ["memory.long_term_max_items", "长期记忆最大条数", "number"],
+            ["memory.retrieval_limit", "每次检索记忆条数", "number"],
+          ],
+        },
+      ];
+
+      const statusEl = document.getElementById("status");
+      const formEl = document.getElementById("form");
+      const sectionsEl = document.getElementById("sections");
+      const navEl = document.getElementById("sectionNav");
+      const quickStatusEl = document.getElementById("quickStatus");
+      let selfieUploadInProgress = false;
+
+      function get(obj, path) {
+        return path.split(".").reduce((acc, key) => acc ? acc[key] : undefined, obj);
+      }
+
+      function set(obj, path, value) {
+        const parts = path.split(".");
+        let cur = obj;
+        for (let i = 0; i < parts.length - 1; i++) {
+          cur[parts[i]] = cur[parts[i]] || {};
+          cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, ch => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;",
+        }[ch]));
+      }
+
+      function renderField(path, label, type, config, size) {
+        const value = get(config, path);
+        const secret = path.endsWith("api_key") || path.endsWith("access_token");
+        const wide = type === "textarea" || size === "wide" ? " wide" : "";
+        if (type === "checkbox") {
+          return `<div class="field${wide}">
+            <label class="field-label" for="${path}">${label}</label>
+            <label class="switch">
+              <input id="${path}" data-field="${path}" type="checkbox" ${value ? "checked" : ""}>
+              <span>${value ? "已开启" : "已关闭"}</span>
+            </label>
+          </div>`;
+        }
+        if (type === "textarea") {
+          return `<div class="field${wide}">
+            <label class="field-label" for="${path}">${label}</label>
+            <textarea id="${path}" data-field="${path}">${escapeHtml(value || "")}</textarea>
+          </div>`;
+        }
+        return `<div class="field${wide}">
+          <label class="field-label" for="${path}">
+            <span>${label}</span>
+            ${secret ? `<span class="field-hint">留空保留原值</span>` : ""}
+          </label>
+          <input id="${path}" data-field="${path}" type="${type}" value="${escapeHtml(value || "")}" placeholder="${secret ? "已设置则留空不变" : ""}">
+        </div>`;
+      }
+
+      function renderQuickStatus(config) {
+        const rows = [
+          ["AIBridge", config.enabled ? "运行中" : "已关闭", config.enabled],
+          ["OneBot", get(config, "onebot.ws_url") || "未配置", Boolean(get(config, "onebot.ws_url"))],
+          ["聊天", get(config, "chat.enabled") ? get(config, "chat.model") : "已关闭", Boolean(get(config, "chat.enabled"))],
+          ["生图", get(config, "image.enabled") ? get(config, "image.model") : "已关闭", Boolean(get(config, "image.enabled"))],
+        ];
+        quickStatusEl.innerHTML = rows.map(([name, value, ok]) => `<div class="metric ${ok ? "ok" : "bad"}"><b>${name}</b><span>${escapeHtml(value)}</span></div>`).join("");
+      }
+
+      function renderSections(config) {
+        navEl.innerHTML = sections.map(section => `<a href="#${section.id}">${section.title}</a>`).join("");
+        sectionsEl.innerHTML = sections.map(section => {
+          const action = section.test ? `<button type="button" class="btn small" data-test="${section.test.target}">${section.test.label}</button>` : "";
+          const extra = section.extra === "voice" ? voicePickerHtml(config) : section.extra === "selfie" ? selfieReferenceHtml(config) : "";
+          return `<section class="panel" id="${section.id}">
+            <div class="panel-head">
+              <div>
+                <h2>${section.title}</h2>
+                <p>${section.desc}</p>
+              </div>
+              <div class="panel-actions">${action}</div>
+            </div>
+            <div class="field-grid">
+              ${section.fields.map(([path, label, type, size]) => renderField(path, label, type, config, size)).join("")}
+              <div class="test-result" data-test-result="${section.test ? section.test.target : section.id}"></div>
+              ${extra}
+            </div>
+          </section>`;
+        }).join("");
+      }
+
+      function selfieReferenceHtml(config) {
+        const name = get(config, "selfie.reference_image") || "";
+        const referenceUrl = get(config, "selfie.reference_url") || "";
+        const previewUrl = referenceUrl || (name ? `${BRIDGE}/api/selfie/reference/${encodeURIComponent(name)}` : "");
+        return `<div class="selfie-reference">
+          <img id="selfiePreview" class="selfie-preview" alt="固定形象参考图" referrerpolicy="no-referrer" ${previewUrl ? `src="${escapeHtml(previewUrl)}"` : "hidden"}>
+          <div class="field">
+            <label class="field-label" for="selfieUpload">形象参考图</label>
+            <input id="selfieUpload" type="file" accept="image/png,image/jpeg,image/webp">
+            <input type="hidden" id="selfieReference" data-field="selfie.reference_image" value="${escapeHtml(name)}">
+            <div id="selfieUploadStatus" class="statusline" role="status">${referenceUrl ? "当前使用公网参考图" : name ? "当前使用本地参考图" : "尚未设置参考图"}</div>
+            <div class="buttons">
+              <button type="button" class="btn small" id="clearSelfieReference">移除参考图</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      async function uploadSelfieReference(file) {
+        if (!file) return;
+        const output = document.getElementById("selfieUploadStatus");
+        if (file.size > 20 * 1024 * 1024) throw new Error("参考图不能超过 20 MB");
+        const saveButton = document.querySelector('button[form="form"]');
+        const uploadInput = document.getElementById("selfieUpload");
+        const clearButton = document.getElementById("clearSelfieReference");
+        const reloadButton = document.getElementById("reload");
+        selfieUploadInProgress = true;
+        saveButton.disabled = true;
+        uploadInput.disabled = true;
+        clearButton.disabled = true;
+        reloadButton.disabled = true;
+        output.textContent = "正在上传参考图...";
+        try {
+          const response = await fetch(`${BRIDGE}/api/selfie/reference`, {
+            method: "POST",
+            headers: { "Content-Type": file.type || "application/octet-stream" },
+            body: file,
+          });
+          const body = await response.json();
+          if (!response.ok || !body.success) throw new Error(body.message || `上传失败：${response.status}`);
+          document.getElementById("selfieReference").value = body.reference_image;
+          document.getElementById("selfie.reference_url").value = "";
+          const preview = document.getElementById("selfiePreview");
+          preview.src = `${BRIDGE}/api/selfie/reference/${encodeURIComponent(body.reference_image)}`;
+          preview.hidden = false;
+          output.textContent = "参考图已上传，待保存配置";
+        } finally {
+          selfieUploadInProgress = false;
+          saveButton.disabled = false;
+          uploadInput.disabled = false;
+          clearButton.disabled = false;
+          reloadButton.disabled = false;
+        }
+      }
+
+      function voicePickerHtml(config) {
+        return `<div class="voice-picker">
+          <div class="voice-top">
+            <div class="field">
+              <label class="field-label" for="voice.preview_group_id">音色列表查询群号</label>
+              <input data-field="voice.preview_group_id" id="voice.preview_group_id" type="text" value="${escapeHtml(get(config, "voice.preview_group_id") || "")}" placeholder="填实际 QQ 群号后加载音色">
+            </div>
+            <button type="button" class="btn" id="loadVoices">加载音色</button>
+          </div>
+          <div id="voiceStatus" class="statusline" style="margin-top:10px">填群号后可以试听并选择音色。</div>
+          <div id="voiceList" class="voice-list"></div>
+        </div>`;
+      }
+
+      function collectConfig() {
+        const payload = {};
+        document.querySelectorAll("[data-field]").forEach(el => {
+          set(payload, el.dataset.field, el.type === "checkbox" ? el.checked : el.value);
+        });
+        return payload;
+      }
+
+      async function loadConfig() {
+        statusEl.textContent = "正在读取配置...";
+        const response = await fetch(`${BRIDGE}/api/config`);
+        if (!response.ok) throw new Error(`AI Bridge 未启动或不可访问：${response.status}`);
+        const body = await response.json();
+        renderQuickStatus(body.data);
+        renderSections(body.data);
+        formEl.hidden = false;
+        statusEl.textContent = `配置已读取。最后同步：${new Date().toLocaleTimeString()}`;
+      }
+
+      async function saveConfig() {
+        if (selfieUploadInProgress) throw new Error("参考图正在上传，请稍后保存");
+        statusEl.textContent = "保存中...";
+        const response = await fetch(`${BRIDGE}/api/config`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(collectConfig()),
+        });
+        const body = await response.json();
+        if (!response.ok || !body.success) throw new Error(body.message || `保存失败：${response.status}`);
+        renderQuickStatus(body.data);
+        const selfie = body.data.selfie || {};
+        document.getElementById("selfie.reference_url").value = selfie.reference_url || "";
+        document.getElementById("selfieUploadStatus").textContent = selfie.reference_url ? "当前使用公网参考图" : selfie.reference_image ? "当前使用本地参考图" : "尚未设置参考图";
+        statusEl.textContent = `已保存。${new Date().toLocaleTimeString()}`;
+      }
+
+      function setTestState(target, state, message) {
+        const el = document.querySelector(`[data-test-result="${target}"]`);
+        if (!el) return;
+        el.className = `test-result show ${state}`;
+        el.textContent = message;
+      }
+
+      async function runTest(target) {
+        setTestState(target, "pending", "正在保存当前配置并测试连接...");
+        await saveConfig();
+        const response = await fetch(`${BRIDGE}/api/test`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ target }),
+        });
+        const body = await response.json().catch(() => ({}));
+        const latency = typeof body.latency_ms === "number" ? `（${body.latency_ms}ms）` : "";
+        if (!response.ok || !body.success) {
+          setTestState(target, "bad", `${body.message || `测试失败：${response.status}`} ${latency}`);
+          return;
+        }
+        setTestState(target, "ok", `${body.message || "测试通过"} ${latency}`);
+      }
+
+      function uniqueVoices(list) {
+        const seen = new Set();
+        return (list || []).filter(item => {
+          const id = String(item.character_id || "");
+          if (!id || seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        });
+      }
+
+      async function loadVoices() {
+        const status = document.getElementById("voiceStatus");
+        const list = document.getElementById("voiceList");
+        const groupId = document.querySelector('[data-field="voice.preview_group_id"]')?.value.trim();
+        const chatType = document.querySelector('[data-field="voice.chat_type"]')?.value || "1";
+        if (!groupId || groupId === "你的群号") {
+          status.textContent = "先填实际 QQ 群号。";
+          list.innerHTML = "";
+          return;
+        }
+        status.textContent = "正在加载音色...";
+        list.innerHTML = "";
+        const response = await fetch(`${BRIDGE}/api/voice/characters?group_id=${encodeURIComponent(groupId)}&chat_type=${encodeURIComponent(chatType)}`);
+        const body = await response.json();
+        if (!response.ok || !body.success) throw new Error(body.message || `加载失败：${response.status}`);
+        const voices = uniqueVoices(body.data);
+        status.textContent = voices.length ? `找到 ${voices.length} 个音色。` : "这个群暂时没有返回可用音色。";
+        list.innerHTML = voices.map(item => {
+          const id = escapeHtml(item.character_id || "");
+          const name = escapeHtml(item.character_name || "未命名音色");
+          const preview = escapeHtml(item.preview_url || "");
+          return `<section class="voice-card">
+            <strong>${name}</strong>
+            <code>${id}</code>
+            ${preview ? `<audio controls src="${preview}"></audio>` : `<div class="statusline">没有试听地址</div>`}
+            <button type="button" class="btn small" data-voice-id="${id}">选择这个音色</button>
+          </section>`;
+        }).join("");
+      }
+
+      document.getElementById("reload").addEventListener("click", () => loadConfig().catch(err => statusEl.textContent = err.message));
+      document.getElementById("form").addEventListener("submit", event => {
+        event.preventDefault();
+        saveConfig().catch(err => statusEl.textContent = err.message);
+      });
+      document.addEventListener("click", event => {
+        if (event.target.closest("#clearSelfieReference")) {
+          document.getElementById("selfieReference").value = "";
+          document.getElementById("selfie.reference_url").value = "";
+          document.getElementById("selfieUpload").value = "";
+          document.getElementById("selfiePreview").hidden = true;
+          document.getElementById("selfiePreview").removeAttribute("src");
+          document.getElementById("selfieUploadStatus").textContent = "参考图已移除，待保存配置";
+        }
+        const test = event.target.closest("[data-test]");
+        if (test) runTest(test.dataset.test).catch(err => setTestState(test.dataset.test, "bad", err.message || String(err)));
+        const loadButton = event.target.closest("#loadVoices");
+        if (loadButton) loadVoices().catch(err => document.getElementById("voiceStatus").textContent = err.message || String(err));
+        const voice = event.target.closest("[data-voice-id]");
+        if (voice) {
+          const input = document.querySelector('[data-field="voice.character"]');
+          input.value = voice.dataset.voiceId;
+          input.focus();
+        }
+      });
+
+      document.addEventListener("change", event => {
+        if (event.target.id === "selfie.reference_url") {
+          const value = event.target.value.trim();
+          const name = document.getElementById("selfieReference").value;
+          const preview = document.getElementById("selfiePreview");
+          const previewUrl = value || (name ? `${BRIDGE}/api/selfie/reference/${encodeURIComponent(name)}` : "");
+          if (previewUrl && /^https?:\/\//i.test(previewUrl)) {
+            preview.src = previewUrl;
+            preview.hidden = false;
+          } else {
+            preview.hidden = true;
+            preview.removeAttribute("src");
+          }
+          document.getElementById("selfieUploadStatus").textContent = value ? "已选择公网参考图，待保存配置" : name ? "已选择本地参考图，待保存配置" : "尚未设置参考图";
+        }
+        if (event.target.id === "selfieUpload") {
+          uploadSelfieReference(event.target.files[0]).catch(err => {
+            document.getElementById("selfieUploadStatus").textContent = err.message || String(err);
+          });
+        }
+      });
+
+      loadConfig().catch(err => statusEl.textContent = err.message);
+    </script>
+  </body>
+</html>

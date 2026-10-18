@@ -1,0 +1,53 @@
+{
+  "enabled": true,
+  "web": {"host": "127.0.0.1", "port": 8001},
+  "onebot": {
+    "ws_url": "ws://127.0.0.1:3001",
+    "access_token": "",
+    "reconnect_seconds": 5
+  },
+  "chat": {
+    "enabled": true,
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "model": "gpt-4o-mini",
+    "trigger": "/ai",
+    "reply_to_all": false,
+    "system_prompt": "你是朵啦，一个中文 QQ 群聊机器人，回答自然、简洁、有帮助。"
+  },
+  "image": {
+    "enabled": true,
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "model": "gpt-image-1",
+    "trigger": "/画图",
+    "size": "1024x1024",
+    "safety_rewrite": true,
+    "timeout_seconds": 300
+  },
+  "image_edit": {
+    "enabled": false,
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "model": "gpt-image-fast",
+    "size": "auto",
+    "safety_rewrite": true,
+    "timeout_seconds": 300
+  },
+  "selfie": {
+    "enabled": false,
+    "identity_prompt": "",
+    "reference_image": "",
+    "reference_url": ""
+  },
+  "voice": {
+    "enabled": false,
+    "trigger": "/语音",
+    "character": "lucy-voice-laibixiaoxin",
+    "chat_type": 1,
+    "preview_group_id": ""
+  },
+  "proactive": {"enabled": true, "probability": 0.08, "cooldown_seconds": 300},
+  "contextual_reply": {"enabled": true, "cooldown_seconds": 35},
+  "memory": {"enabled": true, "summary_enabled": true, "long_term_enabled": true}
+}

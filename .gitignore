@@ -1,0 +1,31 @@
+# Local configuration, credentials and conversations
+**/config.json
+**/config.*.json
+!**/config.example.json
+**/memory*.json
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+launcher.local.json
+
+# Runtime files and private character references
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/*.log
+**/logs/
+**/assets/selfie/
+**/backup*/
+**/test_outputs/
+installation-backups/
+.pytest_cache/
+.idea/
+.vscode/
+Thumbs.db
+
+# Upstream clients and local packages are installed separately
+CLI/
+*.zip
+*.exe
+*.dll
